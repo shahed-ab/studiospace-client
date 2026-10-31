@@ -1,282 +1,181 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
+import { StudioCard } from "@/components/studios/StudioCard";
+import { StudioGridSkeleton } from "@/components/shared/Skeletons";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ConfirmModal } from "@/components/shared/ConfirmModal";
+import { useAuth } from "@/lib/auth";
+import { getFeaturedStudios } from "@/lib/api";
+import { Studio } from "@/types";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/Card";
-import { Logo, ApertureIcon } from "@/components/ui/Logo";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { FiArrowRight, FiCheck, FiStar, FiZap } from "react-icons/fi";
+  FiZap,
+  FiUser,
+  FiTrash2,
+  FiLayers,
+  FiArrowRight,
+  FiSearch,
+} from "react-icons/fi";
 
 export default function Home() {
+  const { user, toggleMockUser } = useAuth();
+  const [featuredStudios, setFeaturedStudios] = useState<Studio[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showSkeleton, setShowSkeleton] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  useEffect(() => {
+    async function loadStudios() {
+      try {
+        setLoading(true);
+        const data = await getFeaturedStudios();
+        setFeaturedStudios(data);
+      } catch (err) {
+        console.error("Error loading studios:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadStudios();
+  }, []);
+
+  const handleDeleteDemo = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    toast.success("Studio deleted successfully", {
+      description: "Listing removed from marketplace index.",
+    });
+  };
+
   return (
-    <main className="min-h-screen py-12">
+    <main className="min-h-screen py-10">
       <Container>
-        {/* Top Header bar with Logo, ThemeToggle, and Phase Badge */}
-        <div className="flex items-center justify-between py-6 border-b border-border mb-12">
-          <Logo size="lg" />
-          <div className="flex items-center gap-3">
-            <Badge variant="accent" dot>
-              Phase 1: Design System Ready
-            </Badge>
-            <div className="p-1 rounded-full bg-surface border border-border">
-              <ThemeToggle />
+        {/* Phase 2 Banner / Status Card */}
+        <div className="p-6 sm:p-8 rounded-[24px] bg-surface border border-border mb-12 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2.5">
+                <Badge variant="accent" dot>
+                  Phase 2 Verification
+                </Badge>
+                <span className="text-xs text-muted">
+                  Navbar, Footer, Data Layer, Auth & Shared Components
+                </span>
+              </div>
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+                StudioSpace Infrastructure Ready
+              </h1>
+              <p className="text-sm text-muted max-w-2xl leading-relaxed">
+                Active Session:{" "}
+                {user ? (
+                  <strong className="text-foreground">
+                    {user.name} ({user.email}) — Role: {user.email.includes("host") ? "Host" : "Creator"}
+                  </strong>
+                ) : (
+                  <strong className="text-foreground">Logged Out (Guest)</strong>
+                )}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={toggleMockUser}
+                className="gap-2"
+              >
+                <FiUser className="w-3.5 h-3.5 text-accent" />
+                Toggle User Persona
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSkeleton(!showSkeleton)}
+              >
+                <FiLayers className="mr-1.5 w-3.5 h-3.5" />
+                {showSkeleton ? "Show Live Cards" : "Simulate Skeletons"}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => setShowConfirmModal(true)}
+              >
+                <FiTrash2 className="mr-1.5 w-3.5 h-3.5" />
+                Test Confirm Modal
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Phase 1 Verification Hero */}
+        {/* Featured Studio Cards Grid Showcase (Strict 3-col desktop, 2-col tablet, 1-col mobile) */}
         <Section spacing="sm">
           <SectionHeading
-            eyebrow="FOUNDATION COMPLETE"
-            title={
-              <>
-                Crafted for creators.{" "}
-                <span className="text-accent">Built with precision.</span>
-              </>
-            }
-            description="Phase 1 setup complete: Next.js App Router, Tailwind tokens, Bricolage Grotesque & DM Sans typography, dark/light theme variables, Sonner toasts, and standard shared UI primitives."
+            eyebrow="CURATED SPACES"
+            title="Featured Studios in High Demand"
+            description="Architectural spaces engineered for flawless lighting, absolute acoustic separation, and frictionless production days."
             action={
-              <Button
-                variant="primary"
-                onClick={() =>
-                  toast.success("Design System Verification Passed!", {
-                    description: "Sonner Toaster and theme tokens are working smoothly.",
-                  })
-                }
-              >
-                Trigger Test Toast
-                <FiZap className="ml-2 w-4 h-4" />
+              <Button asChild variant="ghost" className="gap-2">
+                <a href="#empty-state-demo">
+                  View all 1,200+ studios
+                  <FiArrowRight className="w-4 h-4 text-accent" />
+                </a>
               </Button>
             }
           />
+
+          {loading || showSkeleton ? (
+            <StudioGridSkeleton count={6} />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredStudios.map((studio) => (
+                <StudioCard key={studio._id} studio={studio} />
+              ))}
+            </div>
+          )}
         </Section>
 
-        {/* Logo Assets Verification */}
-        <Section spacing="sm">
+        {/* Empty State Component Showcase */}
+        <Section spacing="sm" id="empty-state-demo">
           <SectionHeading
-            eyebrow="BRAND ASSETS"
-            title="Logo & Brand Components"
-            description="High-resolution aperture squircle icon and wordmark extracted directly from Logo-Board.png and vectorized for sharp rendering at all viewports."
+            eyebrow="ZERO-STATE RESILIENCE"
+            title="Empty State Experience"
+            description="Rule 9: Friendly empty states with clear CTAs when filters, searches, or listings return no data."
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card variant="surface" hover className="h-full">
-              <CardHeader>
-                <Badge variant="category" className="w-fit mb-2">Vector Component</Badge>
-                <CardTitle>Dynamic Theme Logo</CardTitle>
-                <CardDescription>
-                  Vector SVG + Bricolage Grotesque typography with theme reactive colors.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex items-center justify-center py-6 bg-background/50 rounded-xl m-6 border border-border">
-                <Logo size="lg" href="" />
-              </CardContent>
-            </Card>
-
-            <Card variant="surface" hover className="h-full">
-              <CardHeader>
-                <Badge variant="category" className="w-fit mb-2">Public PNG Asset</Badge>
-                <CardTitle>Dark Asset (/public)</CardTitle>
-                <CardDescription>
-                  Crisp 919×191 px extracted PNG for dark backgrounds.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex items-center justify-center py-6 bg-[#0B0B0C] rounded-xl m-6 border border-white/10">
-                <div className="relative h-10 w-48">
-                  <Image
-                    src="/logo-dark.png"
-                    alt="StudioSpace Dark Logo"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card variant="surface" hover className="h-full">
-              <CardHeader>
-                <Badge variant="category" className="w-fit mb-2">Public PNG Asset</Badge>
-                <CardTitle>Light Asset (/public)</CardTitle>
-                <CardDescription>
-                  Crisp 919×191 px extracted PNG for light backgrounds.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex items-center justify-center py-6 bg-[#F6F3EC] rounded-xl m-6 border border-[#E6E0D4]">
-                <div className="relative h-10 w-48">
-                  <Image
-                    src="/logo-light.png"
-                    alt="StudioSpace Light Logo"
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </Section>
-
-        {/* Buttons Showcase */}
-        <Section spacing="sm">
-          <SectionHeading
-            eyebrow="UI PRIMITIVES"
-            title="Standard Button Variants"
-            description="Strict adherence to Section 8 Rule 4: identical pill radius, 44px minimum tap target, subtle transitions, and hover glow."
+          <EmptyState
+            icon={<FiSearch className="w-8 h-8 text-accent" />}
+            title="No production stages found"
+            description="We could not find any studios matching your current filter criteria. Try adjusting your dates, budget, or medium categories."
+            actionText="Reset All Filters"
+            onAction={() =>
+              toast.info("Filter reset requested", {
+                description: "All search parameters reverted to defaults.",
+              })
+            }
+            secondaryActionText="Browse All Categories"
+            onSecondaryAction={() =>
+              toast.info("Category browser opened")
+            }
           />
-
-          <div className="p-8 rounded-[20px] bg-surface border border-border flex flex-wrap items-center gap-4">
-            <Button variant="primary">
-              Primary Action
-              <FiArrowRight className="ml-2 w-4 h-4" />
-            </Button>
-            <Button variant="secondary">Secondary Action</Button>
-            <Button variant="outline">Outline Action</Button>
-            <Button variant="ghost">Ghost Action</Button>
-            <Button variant="danger">Danger Action</Button>
-            <Button variant="primary" size="sm">
-              Small Pill
-            </Button>
-            <Button variant="primary" size="lg">
-              Large Hero CTA
-            </Button>
-            <Button variant="secondary" size="icon" aria-label="Favorite button">
-              <FiStar className="w-4 h-4 text-accent" />
-            </Button>
-          </div>
-        </Section>
-
-        {/* Badges Showcase */}
-        <Section spacing="sm">
-          <SectionHeading
-            eyebrow="STATUS & TAGS"
-            title="Pill Badges"
-            description="Used for studio categories, availability, booking statuses (Pending, Confirmed, Cancelled), and spec callouts."
-          />
-
-          <div className="p-8 rounded-[20px] bg-surface border border-border flex flex-wrap items-center gap-3">
-            <Badge variant="category">PHOTO STUDIO</Badge>
-            <Badge variant="category">FILM STAGE</Badge>
-            <Badge variant="category">PODCAST LOUNGE</Badge>
-            <Badge variant="category">MUSIC SUITE</Badge>
-            <Badge variant="category">WORKSHOP</Badge>
-            <Badge variant="accent" dot>
-              Featured Space
-            </Badge>
-            <Badge variant="success" dot>
-              Confirmed
-            </Badge>
-            <Badge variant="warning" dot>
-              Pending Approval
-            </Badge>
-            <Badge variant="danger" dot>
-              Cancelled
-            </Badge>
-            <Badge variant="info">400A Camlock</Badge>
-            <Badge variant="verified">
-              <FiCheck className="w-3 h-3 text-[#5AA9FF]" /> Commercial Verified
-            </Badge>
-          </div>
-        </Section>
-
-        {/* Cards & Grid Rule Showcase */}
-        <Section spacing="sm">
-          <SectionHeading
-            eyebrow="GRID ARCHITECTURE"
-            title="Equal Height Cards"
-            description="Strictly enforcing Section 8 Rule 8: All cards in a grid have equal width and equal height (h-full flex flex-col) with price and CTA pushed to bottom."
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card hover className="h-full flex flex-col">
-              <CardHeader>
-                <div className="flex items-center justify-between mb-2">
-                  <Badge variant="category">DAYLIGHT PHOTO</Badge>
-                  <span className="text-xs font-semibold text-accent flex items-center gap-1">
-                    <FiStar className="fill-accent text-accent w-3.5 h-3.5" /> 4.98 (142)
-                  </span>
-                </div>
-                <CardTitle className="line-clamp-1">The Cyc Wall by Lumen</CardTitle>
-                <p className="text-xs text-muted">Brooklyn, NY · Greenpoint</p>
-                <CardDescription className="line-clamp-2 mt-2">
-                  2,400 sq ft double corner cyclorama with 16ft grid height and private client mezzanine lounge.
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="flex items-center justify-between pt-4 border-t border-border mt-auto">
-                <div>
-                  <span className="font-heading text-xl font-bold text-foreground">$85</span>
-                  <span className="text-xs text-muted"> / hour</span>
-                </div>
-                <Button variant="primary" size="sm">
-                  View Details
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card hover className="h-full flex flex-col">
-              <CardHeader>
-                <div className="flex items-center justify-between mb-2">
-                  <Badge variant="category">SOUND STAGE</Badge>
-                  <span className="text-xs font-semibold text-accent flex items-center gap-1">
-                    <FiStar className="fill-accent text-accent w-3.5 h-3.5" /> 4.99 (210)
-                  </span>
-                </div>
-                <CardTitle className="line-clamp-1">Prism Stage A Soundstage</CardTitle>
-                <p className="text-xs text-muted">Arts District, Los Angeles, CA</p>
-                <CardDescription className="line-clamp-2 mt-2">
-                  Certified NC-25 acoustic rating, 3-phase 400A camlock disconnect, roll-up bay door for direct grip truck drive-in.
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="flex items-center justify-between pt-4 border-t border-border mt-auto">
-                <div>
-                  <span className="font-heading text-xl font-bold text-foreground">$140</span>
-                  <span className="text-xs text-muted"> / hour</span>
-                </div>
-                <Button variant="primary" size="sm">
-                  View Details
-                </Button>
-              </CardFooter>
-            </Card>
-
-            <Card hover className="h-full flex flex-col">
-              <CardHeader>
-                <div className="flex items-center justify-between mb-2">
-                  <Badge variant="category">PODCAST LOUNGE</Badge>
-                  <span className="text-xs font-semibold text-accent flex items-center gap-1">
-                    <FiStar className="fill-accent text-accent w-3.5 h-3.5" /> 4.92 (67)
-                  </span>
-                </div>
-                <CardTitle className="line-clamp-1">Echo Chamber Podcast Lounge</CardTitle>
-                <p className="text-xs text-muted">South Congress, Austin, TX</p>
-                <CardDescription className="line-clamp-2 mt-2">
-                  Turnkey 4-person broadcast table with Blackmagic ATEM Mini Extreme switcher, 4K cameras, and live audio monitoring.
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="flex items-center justify-between pt-4 border-t border-border mt-auto">
-                <div>
-                  <span className="font-heading text-xl font-bold text-foreground">$50</span>
-                  <span className="text-xs text-muted"> / hour</span>
-                </div>
-                <Button variant="primary" size="sm">
-                  View Details
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
         </Section>
       </Container>
+
+      {/* Confirmation Modal Component Test */}
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleDeleteDemo}
+        title="Delete Studio Listing?"
+        description="Are you sure you want to remove this studio? All upcoming bookings will be cancelled and this action cannot be undone."
+        confirmText="Yes, Delete Listing"
+        variant="danger"
+      />
     </main>
   );
 }
-

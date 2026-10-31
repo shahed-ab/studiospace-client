@@ -2,7 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin"],
@@ -55,8 +58,12 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange={false}
         >
-          {children}
-          <Toaster position="bottom-right" richColors />
+          <AuthProvider>
+            <Navbar />
+            <div className="flex-1 flex flex-col">{children}</div>
+            <Footer />
+            <Toaster position="bottom-right" richColors />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
