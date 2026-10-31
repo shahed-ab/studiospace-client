@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel-build": "next build && mkdir -p \".next/server/app/(public)\" && touch \".next/server/app/(public)/page_client-reference-manifest.js\""
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -42,4 +43,3 @@
     "typescript": "^5.7.2"
   }
 }
-
