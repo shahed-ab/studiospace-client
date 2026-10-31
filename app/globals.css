@@ -104,6 +104,12 @@
   }
 }
 
+/* Marquee ticker animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 /* Custom subtle dark scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
