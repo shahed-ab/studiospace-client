@@ -104,3 +104,4 @@ export default function EditStudioPage() {
 
   return <StudioForm initialData={studio} mode="edit" />;
 }
+

@@ -38,7 +38,10 @@ export interface Studio {
   featured?: boolean;
   instantBook?: boolean;
   squareFeet?: number;
+  sqft?: number;
   ceilingHeight?: string;
+  power?: string;
+  rules?: string[];
 }
 
 export type BookingStatus = "Pending" | "Confirmed" | "Completed" | "Cancelled";

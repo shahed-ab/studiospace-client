@@ -8,3 +8,4 @@ export default function PrivateLayout({
 }) {
   return <ProtectedRoute>{children}</ProtectedRoute>;
 }
+

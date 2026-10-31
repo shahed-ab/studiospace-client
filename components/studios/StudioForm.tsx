@@ -174,9 +174,9 @@ export function StudioForm({ initialData, mode }: StudioFormProps) {
           images: allImages,
           amenities: selectedAmenities,
           overview: data.overview,
-          ownerName: user.name,
-          ownerEmail: user.email,
-          ownerAvatar: user.photoURL,
+          ownerName: user.name || "Studio Host",
+          ownerEmail: user.email || "host@studiospace.io",
+          ownerAvatar: user.photoURL || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
           instantBook: true,
           rules: [
             "No smoking or open flame on set without union fire safety officer",
