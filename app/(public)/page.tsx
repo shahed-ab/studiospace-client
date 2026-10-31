@@ -231,7 +231,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* ─── HERO SLIDER ─────────────────────────────────────────────────── */}
-      <section className="relative w-full min-h-[92vh] flex flex-col items-center justify-center overflow-hidden -mt-4">
+      <section className="relative w-full flex flex-col items-center justify-center overflow-hidden pt-24 sm:pt-28 md:pt-32 pb-8 sm:pb-12">
         {/* Background Images */}
         {HERO_SLIDES.map((s, i) => (
           <div
@@ -253,12 +253,12 @@ export default function HomePage() {
         ))}
 
         {/* Dark overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-black/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-black/85 pointer-events-none" />
 
-        {/* Hero Content */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center pt-16 pb-32">
+        {/* Hero Content in Natural Flow */}
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
           {/* Eyebrow pill badge */}
-          <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-surface/30 backdrop-blur-md border border-white/15 text-xs font-medium text-foreground/90 mb-8">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface/40 backdrop-blur-md border border-white/15 text-xs font-medium text-foreground/90 mb-5 sm:mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shrink-0" />
             <span className="font-semibold tracking-wider uppercase text-accent/90">
               {slide.eyebrow}
@@ -267,27 +267,27 @@ export default function HomePage() {
           </div>
 
           {/* Giant two-tone heading */}
-          <h1 className="font-heading font-extrabold leading-none tracking-tight text-foreground text-[clamp(3rem,8vw,6.5rem)] mb-8">
+          <h1 className="text-hero font-heading font-extrabold tracking-tight text-foreground mb-4 sm:mb-6 max-w-4xl">
             <span className="block">{slide.heading1}{" "}
               <span className="text-accent">{slide.heading2}</span>
             </span>
             <span className="block text-accent">{slide.heading3}</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-foreground/75 max-w-2xl mb-12 leading-relaxed">
-            The curated peer-to-peer marketplace connecting visionary filmmakers,
-            photographers, and audio engineers with world-class production spaces.
+          <p className="subtext-hero text-foreground/80 max-w-2xl mx-auto mb-6 sm:mb-8 leading-relaxed">
+            The curated marketplace connecting visionary filmmakers,
+            photographers, and audio engineers with verified, union-spec production spaces.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
-            <Button asChild variant="primary" size="lg" className="min-w-[180px]">
+          {/* CTA Buttons - Full Width on Mobile, Side by Side on Desktop */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto mb-6 sm:mb-8">
+            <Button asChild variant="primary" size="lg" className="w-full sm:w-[190px] justify-center">
               <Link href="/studios">
                 Explore Studios
                 <FiArrowRight className="ml-2 w-4 h-4" />
               </Link>
             </Button>
-            <Button asChild variant="secondary" size="lg" className="min-w-[180px] border-white/20 bg-white/10 hover:bg-white/20 text-foreground backdrop-blur-md">
+            <Button asChild variant="secondary" size="lg" className="w-full sm:w-[190px] justify-center border-white/20 bg-white/10 hover:bg-white/20 text-foreground backdrop-blur-md">
               <Link href="/add-studio">
                 Host Your Space
                 <FiPlus className="ml-2 w-4 h-4" />
@@ -296,13 +296,13 @@ export default function HomePage() {
           </div>
 
           {/* Slide nav dots */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-8 sm:mb-10">
             <button
               onClick={prevSlide}
-              className="w-9 h-9 rounded-full bg-white/10 border border-white/15 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/20 transition-all"
+              className="w-8 h-8 rounded-full bg-white/10 border border-white/15 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/20 transition-all"
               aria-label="Previous slide"
             >
-              <FiArrowLeft className="w-4 h-4" />
+              <FiArrowLeft className="w-3.5 h-3.5" />
             </button>
             <div className="flex items-center gap-2">
               {HERO_SLIDES.map((_, i) => (
@@ -313,7 +313,7 @@ export default function HomePage() {
                   className={cn(
                     "rounded-full transition-all duration-300",
                     i === currentSlide
-                      ? "w-8 h-2 bg-accent"
+                      ? "w-7 h-2 bg-accent"
                       : "w-2 h-2 bg-white/30 hover:bg-white/60"
                   )}
                 />
@@ -321,24 +321,22 @@ export default function HomePage() {
             </div>
             <button
               onClick={nextSlide}
-              className="w-9 h-9 rounded-full bg-white/10 border border-white/15 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/20 transition-all"
+              className="w-8 h-8 rounded-full bg-white/10 border border-white/15 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-white/20 transition-all"
               aria-label="Next slide"
             >
-              <FiArrowRight className="w-4 h-4" />
+              <FiArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
-        </div>
 
-        {/* Quick Search Bar pinned at the bottom of hero */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 pb-0">
-          <Container>
+          {/* Quick Search Bar (In Natural Flow, Never Overlaps, 2x2 on Tablet, Compact List on Mobile) */}
+          <div className="w-full max-w-5xl mx-auto">
             <form
               onSubmit={handleSearch}
-              className="glass-panel rounded-2xl p-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shadow-2xl mb-[-1px]"
+              className="glass-panel rounded-2xl p-3.5 sm:p-5 grid grid-cols-1 md:grid-cols-2 lg:flex lg:flex-row items-stretch lg:items-center gap-3 sm:gap-4 shadow-2xl text-left"
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-1 min-w-0 p-2 sm:p-0">
                 <FiMapPin className="w-5 h-5 text-accent shrink-0" />
-                <div className="flex flex-col min-w-0">
+                <div className="flex flex-col min-w-0 flex-1">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-accent mb-0.5">Location</span>
                   <input
                     type="text"
@@ -349,47 +347,56 @@ export default function HomePage() {
                   />
                 </div>
               </div>
-              <div className="hidden sm:block w-px h-10 bg-border" />
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+
+              <div className="hidden lg:block w-px h-10 bg-border" />
+
+              <div className="flex items-center gap-3 flex-1 min-w-0 p-2 sm:p-0">
                 <FiCamera className="w-5 h-5 text-accent shrink-0" />
                 <div className="flex flex-col min-w-0">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-accent mb-0.5">Category</span>
                   <span className="text-sm text-muted">All Disciplines</span>
                 </div>
               </div>
-              <div className="hidden sm:block w-px h-10 bg-border" />
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+
+              <div className="hidden lg:block w-px h-10 bg-border" />
+
+              <div className="flex items-center gap-3 flex-1 min-w-0 p-2 sm:p-0">
                 <FiClock className="w-5 h-5 text-accent shrink-0" />
                 <div className="flex flex-col min-w-0">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-accent mb-0.5">Date & Hours</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-accent mb-0.5">Date &amp; Hours</span>
                   <span className="text-sm text-muted">Select day &amp; time</span>
                 </div>
               </div>
-              <Button type="submit" variant="primary" size="lg" className="shrink-0 px-8">
+
+              <Button type="submit" variant="primary" size="lg" className="w-full lg:w-auto shrink-0 px-6 sm:px-8 justify-center">
                 <FiSearch className="mr-2 w-4 h-4" />
                 Search
               </Button>
             </form>
-          </Container>
+          </div>
         </div>
       </section>
 
-      {/* ─── STATS BAR ───────────────────────────────────────────────────── */}
-      <div className="bg-surface border-b border-border py-6">
+      {/* ─── STATS BAR (Compact 1x3 Row on Mobile) ─────────────────────────── */}
+      <div className="bg-surface border-b border-border py-4 sm:py-6">
         <Container>
-          <div className="flex flex-col sm:flex-row items-center justify-around gap-6 sm:gap-0">
+          <div className="grid grid-cols-3 gap-2 sm:gap-6 items-center text-center sm:text-left">
             {[
-              { icon: FiSettings, value: "1,200+", label: "Verified High-Spec Studios" },
-              { icon: FiUsers, value: "8,500", label: "Active Creative Directors" },
-              { icon: FiStar, value: "4.98 / 5.0", label: "Average Creator Booking Score" },
+              { icon: FiSettings, value: "1,200+", label: "Verified Studios" },
+              { icon: FiUsers, value: "8,500", label: "Active Directors" },
+              { icon: FiStar, value: "4.98", label: "Creator Score" },
             ].map((stat) => (
-              <div key={stat.label} className="flex items-center gap-4">
-                <div className="w-11 h-11 rounded-xl bg-elevated border border-border flex items-center justify-center text-accent shrink-0">
-                  <stat.icon className="w-5 h-5" />
+              <div key={stat.label} className="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1.5 sm:gap-3.5">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-elevated border border-border flex items-center justify-center text-accent shrink-0">
+                  <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
                 <div>
-                  <div className="font-heading text-xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-xs text-muted">{stat.label}</div>
+                  <div className="font-heading text-sm sm:text-lg md:text-xl font-bold text-foreground leading-tight">
+                    {stat.value}
+                  </div>
+                  <div className="text-[10px] sm:text-xs text-muted truncate max-w-[90px] sm:max-w-none">
+                    {stat.label}
+                  </div>
                 </div>
               </div>
             ))}
@@ -653,13 +660,13 @@ export default function HomePage() {
       {/* ─── CTA BANNER ──────────────────────────────────────────────────── */}
       <Section spacing="sm">
         <Container>
-          <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#2a1510] via-[#1a0e09] to-[#0e0a07] border border-accent/20 p-10 sm:p-16 md:p-20 text-center flex flex-col items-center">
+          <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#2a1510] via-[#1a0e09] to-[#0e0a07] border border-accent/20 p-8 sm:p-14 md:p-20 text-center flex flex-col items-center">
             {/* Background glow behind icon */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-64 bg-accent/15 blur-3xl rounded-full pointer-events-none" />
 
             {/* Aperture icon */}
-            <div className="relative z-10 w-16 h-16 rounded-2xl bg-accent flex items-center justify-center shadow-xl shadow-accent/30 mb-8">
-              <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-9 h-9">
+            <div className="relative z-10 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-accent flex items-center justify-center shadow-xl shadow-accent/30 mb-6 sm:mb-8">
+              <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 sm:w-9 sm:h-9">
                 <line x1="20" y1="5" x2="20" y2="9" stroke="white" strokeWidth="2" strokeLinecap="round" />
                 <line x1="20" y1="31" x2="20" y2="35" stroke="white" strokeWidth="2" strokeLinecap="round" />
                 <line x1="5" y1="20" x2="9" y2="20" stroke="white" strokeWidth="2" strokeLinecap="round" />
@@ -670,21 +677,21 @@ export default function HomePage() {
             </div>
 
             <div className="relative z-10 max-w-3xl">
-              <h2 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-[#F4F1EA] leading-tight tracking-tight mb-4">
+              <h2 className="heading-h2 font-heading font-bold text-[#F4F1EA] tracking-tight mb-3 sm:mb-4">
                 Your next shoot starts here.
               </h2>
-              <p className="text-[#A09C94] text-base sm:text-lg max-w-xl mx-auto leading-relaxed mb-10">
+              <p className="text-sm sm:text-base text-[#A09C94] max-w-xl mx-auto leading-relaxed mb-8">
                 Join over 8,500 directors, photographers, and podcasters creating across the world&apos;s most inspiring private production spaces.
               </p>
 
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                <Button asChild variant="primary" size="lg" className="min-w-[200px]">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
+                <Button asChild variant="primary" size="lg" className="w-full sm:w-[200px]">
                   <Link href="/studios">
                     Explore All Studios
                     <FiArrowRight className="ml-2 w-4 h-4" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" className="min-w-[180px] bg-white/10 border border-white/20 text-[#F4F1EA] hover:bg-white/20 rounded-full">
+                <Button asChild size="lg" className="w-full sm:w-[180px] bg-white/10 border border-white/20 text-[#F4F1EA] hover:bg-white/20 rounded-full">
                   <Link href="/add-studio">
                     List Your Studio
                     <FiPlus className="ml-2 w-4 h-4" />

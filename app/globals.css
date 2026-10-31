@@ -43,22 +43,74 @@
     border-color: var(--border-color);
   }
 
+  html {
+    font-size: 15px;
+  }
+  @media (min-width: 768px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
   body {
     background-color: rgb(var(--background-rgb));
     color: rgb(var(--foreground-rgb));
     font-family: var(--font-body), sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
     overflow-x: hidden;
   }
 
-  /* Consistent Section Heading styles as required by Section 8 Rule 1 */
-  h1, h2, h3, h4, h5, h6 {
+  /* Consistent Fluid Typography matching Phase 6 Audit Rules */
+  h1, .heading-h1, .text-hero {
+    font-family: var(--font-heading), sans-serif;
+    color: rgb(var(--foreground-rgb));
+    letter-spacing: -0.025em;
+    font-weight: 800;
+    font-size: clamp(2rem, 6vw + 0.5rem, 4.5rem);
+    line-height: 1.1;
+  }
+
+  h2, .heading-h2 {
     font-family: var(--font-heading), sans-serif;
     color: rgb(var(--foreground-rgb));
     letter-spacing: -0.02em;
     font-weight: 700;
+    font-size: clamp(1.5rem, 3vw + 0.75rem, 3rem);
+    line-height: 1.15;
+  }
+
+  h3, .heading-h3 {
+    font-family: var(--font-heading), sans-serif;
+    color: rgb(var(--foreground-rgb));
+    letter-spacing: -0.015em;
+    font-weight: 700;
+    font-size: clamp(1.125rem, 1.5vw + 0.75rem, 1.5rem);
+    line-height: 1.25;
+  }
+
+  h4, .heading-h4 {
+    font-family: var(--font-heading), sans-serif;
+    color: rgb(var(--foreground-rgb));
+    letter-spacing: -0.01em;
+    font-weight: 600;
+    font-size: clamp(1rem, 1vw + 0.5rem, 1.25rem);
+    line-height: 1.35;
+  }
+
+  .stat-number {
+    font-size: clamp(1.75rem, 4vw + 0.5rem, 3.25rem);
+    line-height: 1;
+    font-weight: 800;
+    font-family: var(--font-heading), sans-serif;
+  }
+
+  .subtext-hero {
+    font-size: clamp(0.9375rem, 1.2vw + 0.5rem, 1.125rem);
+    line-height: 1.6;
   }
 
   p {

@@ -14,9 +14,9 @@ export function Section({
 }: SectionProps) {
   const spacingClasses = {
     none: "py-0",
-    sm: "py-10 md:py-14",
-    default: "py-16 md:py-24",
-    lg: "py-20 md:py-32",
+    sm: "py-8 md:py-12",
+    default: "py-10 md:py-20 lg:py-24",
+    lg: "py-12 md:py-24 lg:py-32",
   };
 
   return (

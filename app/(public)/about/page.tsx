@@ -100,7 +100,7 @@ export default function AboutUsPage() {
               THE STUDIOSPACE MISSION
             </div>
 
-            <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-foreground leading-[1.15] tracking-tight mb-6">
+            <h1 className="text-hero font-heading font-extrabold tracking-tight text-foreground mb-4 sm:mb-6">
               Built by Production Managers for the Next Generation of Makers
             </h1>
 
@@ -366,7 +366,7 @@ export default function AboutUsPage() {
       <Section spacing="sm">
         <Container>
           <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#2a1510] via-[#1a0e09] to-[#0e0a07] border border-accent/20 p-10 sm:p-16 text-center flex flex-col items-center">
-            <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-[#F4F1EA] mb-4">
+            <h2 className="heading-h2 font-heading font-bold text-[#F4F1EA] mb-3 sm:mb-4">
               Join the StudioSpace Network
             </h2>
             <p className="text-[#A09C94] text-sm sm:text-base max-w-xl mx-auto mb-8 leading-relaxed">

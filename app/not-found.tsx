@@ -36,16 +36,16 @@ export default function NotFound() {
           </div>
 
           {/* Large 404 display */}
-          <div className="font-heading text-7xl sm:text-8xl md:text-9xl font-black text-accent tracking-tighter leading-none mb-3 select-none">
+          <div className="font-heading text-6xl sm:text-7xl md:text-8xl font-black text-accent tracking-tighter leading-none mb-3 select-none">
             404
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-elevated border border-border text-xs font-semibold text-muted mb-4 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-elevated border border-border text-[11px] sm:text-xs font-semibold text-muted mb-4 uppercase tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
             CUT! SCENE NOT FOUND • TAKE 404
           </div>
 
-          <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4 leading-tight">
+          <h1 className="heading-h2 font-heading font-bold text-foreground mb-3 leading-tight">
             This Studio Stage Has Wrapped
           </h1>
 

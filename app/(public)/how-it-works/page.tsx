@@ -144,7 +144,7 @@ export default function HowItWorksPage() {
               THE PRODUCTION SYSTEM
             </div>
 
-            <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-foreground leading-[1.15] tracking-tight mb-6">
+            <h1 className="text-hero font-heading font-extrabold tracking-tight text-foreground mb-4 sm:mb-6">
               How StudioSpace Powers World-Class Productions
             </h1>
 
@@ -473,7 +473,7 @@ export default function HowItWorksPage() {
               <FiCamera className="w-7 h-7 text-white" />
             </div>
 
-            <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold text-[#F4F1EA] mb-4">
+            <h2 className="heading-h2 font-heading font-bold text-[#F4F1EA] mb-3 sm:mb-4">
               Ready to Stage Your Next Project?
             </h2>
             <p className="text-[#A09C94] text-sm sm:text-base max-w-xl mx-auto mb-8 leading-relaxed">

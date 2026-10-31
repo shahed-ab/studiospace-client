@@ -26,7 +26,7 @@ export function SectionHeading({
   return (
     <div
       className={cn(
-        "mb-10 md:mb-14",
+        "mb-8 md:mb-14",
         action && "flex flex-col md:flex-row md:items-end md:justify-between gap-6",
         className
       )}
@@ -40,7 +40,7 @@ export function SectionHeading({
         )}
       >
         {eyebrow && (
-          <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-accent mb-3">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-accent mb-2.5 sm:mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
             <span>{eyebrow}</span>
           </div>
@@ -48,7 +48,7 @@ export function SectionHeading({
 
         <h2
           className={cn(
-            "text-3xl sm:text-4xl md:text-5xl font-heading font-bold tracking-tight text-foreground",
+            "heading-h2 font-heading font-bold tracking-tight text-foreground",
             titleClassName
           )}
         >
@@ -58,7 +58,7 @@ export function SectionHeading({
         {description && (
           <p
             className={cn(
-              "text-base md:text-lg text-muted max-w-[65ch] leading-relaxed mt-3.5",
+              "text-sm sm:text-base text-muted max-w-[65ch] leading-relaxed mt-2.5 sm:mt-3.5",
               isCentered && "mx-auto"
             )}
           >
