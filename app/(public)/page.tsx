@@ -653,9 +653,12 @@ export default function HomePage() {
       {/* ─── CTA BANNER ──────────────────────────────────────────────────── */}
       <Section spacing="sm">
         <Container>
-          <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#2a1510] via-[#1a0e09] to-[#0e0a07] border border-accent/20 p-12 sm:p-20 text-center">
+          <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#2a1510] via-[#1a0e09] to-[#0e0a07] border border-accent/20 p-10 sm:p-16 md:p-20 text-center flex flex-col items-center">
+            {/* Background glow behind icon */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-64 bg-accent/15 blur-3xl rounded-full pointer-events-none" />
+
             {/* Aperture icon */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[70%] w-16 h-16 rounded-2xl bg-accent flex items-center justify-center shadow-xl shadow-accent/30 mb-4">
+            <div className="relative z-10 w-16 h-16 rounded-2xl bg-accent flex items-center justify-center shadow-xl shadow-accent/30 mb-8">
               <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-9 h-9">
                 <line x1="20" y1="5" x2="20" y2="9" stroke="white" strokeWidth="2" strokeLinecap="round" />
                 <line x1="20" y1="31" x2="20" y2="35" stroke="white" strokeWidth="2" strokeLinecap="round" />
@@ -666,7 +669,7 @@ export default function HomePage() {
               </svg>
             </div>
 
-            <div className="mt-16">
+            <div className="relative z-10 max-w-3xl">
               <h2 className="font-heading text-4xl sm:text-5xl md:text-6xl font-bold text-[#F4F1EA] leading-tight tracking-tight mb-4">
                 Your next shoot starts here.
               </h2>
