@@ -90,6 +90,49 @@ export function StudioForm({ initialData, mode }: StudioFormProps) {
   const router = useRouter();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Invalid file type", { description: "Please upload an image file (PNG, JPG, WebP)." });
+      return;
+    }
+
+    setIsUploading(true);
+    const toastId = toast.loading("Uploading photo to ImgBB...");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to upload image");
+      }
+
+      setValue("primaryImage", data.url, { shouldValidate: true });
+      toast.success("Photo uploaded successfully!", {
+        id: toastId,
+        description: "Image securely hosted on ImgBB and set as primary stage photo.",
+      });
+    } catch (err: any) {
+      toast.error("Upload failed", {
+        id: toastId,
+        description: err.message || "Could not upload image. Please try again or paste a URL.",
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // Selected amenities
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
@@ -456,20 +499,39 @@ export function StudioForm({ initialData, mode }: StudioFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
               <div className="md:col-span-7 space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1.5">
-                    Primary Stage Photo URL *
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-foreground">
+                      Primary Stage Photo *
+                    </label>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="stage-photo-upload"
+                    />
+                    <label
+                      htmlFor="stage-photo-upload"
+                      className={`text-xs px-3 py-1 rounded-full border border-border bg-elevated hover:bg-surface text-foreground font-medium cursor-pointer inline-flex items-center gap-1.5 transition-all shadow-sm ${
+                        isUploading ? "opacity-50 pointer-events-none" : ""
+                      }`}
+                    >
+                      <FiUploadCloud className="w-3.5 h-3.5 text-accent" />
+                      {isUploading ? "Uploading..." : "Upload from Device"}
+                    </label>
+                  </div>
                   <input
                     type="url"
                     {...register("primaryImage")}
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder="https://images.unsplash.com/... or upload photo from device"
                     className="w-full px-4 py-2.5 rounded-xl bg-elevated border border-border text-foreground text-sm focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors font-mono text-xs"
                   />
                   {errors.primaryImage && (
                     <p className="text-xs text-danger mt-1.5">{errors.primaryImage.message}</p>
                   )}
                   <p className="text-[11px] text-muted mt-1">
-                    Provide a high-resolution, landscape-oriented image URL (aspect ratio 4:3 or 16:9).
+                    Upload a local photo to ImgBB or paste a direct high-resolution image URL.
                   </p>
                 </div>
 
