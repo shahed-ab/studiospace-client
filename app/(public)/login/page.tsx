@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { mockUsers } from "@/data/users";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
@@ -37,9 +37,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get("redirect") || "/dashboard";
+  const redirectPath = searchParams.get("redirect") || searchParams.get("callbackUrl") || "/dashboard";
 
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,7 +63,7 @@ function LoginContent() {
       const res = await login(data.email, data.password);
       if (res.success) {
         toast.success("Welcome back!", {
-          description: `Signed in as ${data.email}. Redirecting to your workspace...`,
+          description: `Signed in as ${data.email}. Redirecting...`,
         });
         router.push(redirectPath);
       } else {
@@ -80,16 +80,22 @@ function LoginContent() {
 
   const handleQuickFill = (user: (typeof mockUsers)[0]) => {
     setValue("email", user.email, { shouldValidate: true });
-    setValue("password", "password123", { shouldValidate: true });
-    toast.info(`Loaded test account: ${user.name}`, {
+    setValue("password", "Pass123!", { shouldValidate: true });
+    toast.info(`Loaded test credentials: ${user.name}`, {
       description: `${user.email} (${user.role === "admin" ? "Admin" : "Host/Creator"})`,
     });
   };
 
-  const handleGoogleLogin = () => {
-    toast.info("Google Authentication", {
-      description: "Google OAuth is configured for demo environments. Quick-fill a test account below to proceed.",
-    });
+  const handleGoogleLogin = async () => {
+    try {
+      if (loginWithGoogle) {
+        await loginWithGoogle(redirectPath);
+      }
+    } catch (err: any) {
+      toast.error("Google sign in failed", {
+        description: err.message || "Could not connect to Google",
+      });
+    }
   };
 
   return (

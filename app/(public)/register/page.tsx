@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -24,6 +24,7 @@ import {
   FiCheckCircle,
   FiShield,
   FiSliders,
+  FiImage,
 } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 
@@ -31,6 +32,7 @@ const registerSchema = z
   .object({
     name: z.string().min(2, "Full name must be at least 2 characters"),
     email: z.string().email("Please enter a valid work or production email address"),
+    photoURL: z.string().url("Please enter a valid image URL").optional().or(z.literal("")),
     role: z.enum(["creator", "host"], { required_error: "Please select an account type" }),
     password: z
       .string()
@@ -55,7 +57,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 function RegisterContent() {
   const router = useRouter();
-  const { register: authRegister } = useAuth();
+  const { register: authRegister, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,6 +73,7 @@ function RegisterContent() {
     defaultValues: {
       name: "",
       email: "",
+      photoURL: "",
       role: "creator",
       password: "",
       confirmPassword: "",
@@ -111,12 +114,12 @@ function RegisterContent() {
 
     setIsSubmitting(true);
     try {
-      const res = await authRegister(data.name, data.email, data.password);
+      const res = await authRegister(data.name, data.email, data.password, data.photoURL || undefined);
       if (res.success) {
         toast.success("Account created successfully!", {
-          description: `Welcome to StudioSpace, ${data.name}. You are now signed in.`,
+          description: `Welcome to StudioSpace, ${data.name}. Please sign in with your credentials.`,
         });
-        router.push(data.role === "host" ? "/add-studio" : "/dashboard");
+        router.push("/login");
       } else {
         toast.error("Registration failed", {
           description: res.error || "Please check your information and try again.",
@@ -129,10 +132,16 @@ function RegisterContent() {
     }
   };
 
-  const handleGoogleRegister = () => {
-    toast.info("Google Authentication", {
-      description: "Google OAuth is configured for demo environments. Fill out the form to test registration.",
-    });
+  const handleGoogleRegister = async () => {
+    try {
+      if (loginWithGoogle) {
+        await loginWithGoogle("/dashboard");
+      }
+    } catch (err: any) {
+      toast.error("Google registration failed", {
+        description: err.message || "Could not connect to Google",
+      });
+    }
   };
 
   return (
@@ -244,6 +253,25 @@ function RegisterContent() {
                   </div>
                   {errors.email && (
                     <p className="text-xs text-danger mt-1.5">{errors.email.message}</p>
+                  )}
+                </div>
+
+                {/* Profile Photo URL (Optional) */}
+                <div>
+                  <label className="block text-xs font-medium text-foreground mb-1.5">
+                    Profile Photo URL <span className="text-muted">(Optional)</span>
+                  </label>
+                  <div className="relative">
+                    <FiImage className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+                    <input
+                      type="url"
+                      {...register("photoURL")}
+                      placeholder="https://images.unsplash.com/photo-..."
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-elevated border border-border text-foreground text-sm placeholder:text-muted/60 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                    />
+                  </div>
+                  {errors.photoURL && (
+                    <p className="text-xs text-danger mt-1.5">{errors.photoURL.message}</p>
                   )}
                 </div>
 
