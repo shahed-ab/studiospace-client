@@ -44,17 +44,17 @@ export default function MyBookingsPage() {
   const [cancellingBooking, setCancellingBooking] = useState<Booking | null>(null);
 
   const fetchBookings = useCallback(async () => {
-    if (!user?.email) return;
+    if (!user) return;
     setLoading(true);
     try {
-      const data = await getMyBookings(user.email);
+      const data = await getMyBookings();
       setBookings(data);
     } catch {
       toast.error("Failed to load your production bookings");
     } finally {
       setLoading(false);
     }
-  }, [user?.email]);
+  }, [user]);
 
   useEffect(() => {
     fetchBookings();

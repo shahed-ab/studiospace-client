@@ -9,6 +9,8 @@ import {
   getHostBookings,
   getMyStudios,
   updateBookingStatus,
+  getDashboardStats,
+  DashboardStats,
 } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import { toast } from "sonner";
@@ -38,6 +40,7 @@ export default function DashboardPage() {
   const [hostBookings, setHostBookings] = useState<Booking[]>([]);
   const [myBookings, setMyBookings] = useState<Booking[]>([]);
   const [studios, setStudios] = useState<Studio[]>([]);
+  const [serverStats, setServerStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Decline request confirmation modal
@@ -47,14 +50,16 @@ export default function DashboardPage() {
     if (!user?.email) return;
     setLoading(true);
     try {
-      const [hBookings, mBookings, userStudios] = await Promise.all([
+      const [hBookings, mBookings, userStudios, stats] = await Promise.all([
         getHostBookings(user.email),
         getMyBookings(user.email),
         getMyStudios(user.email),
+        getDashboardStats().catch(() => null),
       ]);
       setHostBookings(hBookings);
       setMyBookings(mBookings);
       setStudios(userStudios);
+      if (stats) setServerStats(stats);
     } catch {
       toast.error("Failed to load dashboard metrics");
     } finally {
@@ -77,6 +82,8 @@ export default function DashboardPage() {
       .filter((b) => b.status === "Confirmed" || b.status === "Completed")
       .reduce((sum, b) => sum + b.totalPrice, 0);
   }, [hostBookings]);
+
+  const displayEarnings = serverStats?.earnings ?? totalEarnings;
 
   const handleConfirmRequest = async (booking: Booking) => {
     try {
@@ -177,7 +184,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="font-heading text-3xl font-extrabold text-foreground">
-                ${totalEarnings.toLocaleString()}
+                ${displayEarnings.toLocaleString()}
               </div>
               <div className="flex items-center gap-1 text-xs text-success font-medium mt-1.5">
                 <FiTrendingUp className="w-3.5 h-3.5" />
