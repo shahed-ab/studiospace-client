@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Studio } from "@/types";
 import { getMyStudios, deleteStudio } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { toast } from "sonner";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";

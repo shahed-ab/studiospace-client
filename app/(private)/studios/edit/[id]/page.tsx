@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Studio } from "@/types";
 import { getStudioById } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { StudioForm } from "@/components/studios/StudioForm";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";

@@ -41,6 +41,3 @@ export const auth = betterAuth({
     }),
   },
 });
-
-// Re-export mock auth context until step C5 replaces it
-export { AuthProvider, useAuth } from "@/context/auth-context";

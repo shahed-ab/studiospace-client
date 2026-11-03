@@ -1,111 +1,198 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { User } from "@/types";
-import { mockUsers } from "@/data/users";
+import { authClient } from "@/lib/auth-client";
+import { http } from "@/lib/http";
+import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
-  register: (name: string, email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  register: (
+    name: string,
+    email: string,
+    password?: string,
+    photoURL?: string
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  switchUser: (userId: string) => void;
+  loginWithGoogle: (callbackURL?: string) => Promise<void>;
+  switchUser: (userId?: string) => void;
   toggleMockUser: () => void;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = "studiospace_current_user";
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Start with null and isLoading true to avoid hydration mismatch
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  useEffect(() => {
+  // Synchronize BetterAuth session with Express API via /api/bridge
+  const syncSessionWithBackend = useCallback(async (): Promise<boolean> => {
     try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
-        setUser(JSON.parse(stored));
-      } else {
-        // Default to logged-in host user Alex Vance for seamless first review
-        const defaultUser = mockUsers[0];
-        setUser(defaultUser);
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(defaultUser));
-      }
-    } catch {
-      setUser(mockUsers[0]);
-    } finally {
-      setIsLoading(false);
+      const bridgeRes = await fetch("/api/bridge");
+      if (!bridgeRes.ok) return false;
+      const { bridgeToken } = await bridgeRes.json();
+      if (!bridgeToken) return false;
+
+      await http.post("/server-api/auth/session", { bridgeToken }, { skipAuthRedirect: true });
+      return true;
+    } catch (err) {
+      console.error("Failed to bridge session to backend:", err);
+      return false;
     }
   }, []);
 
-  const login = async (email: string): Promise<{ success: boolean; error?: string }> => {
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const matched = mockUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
-    const loggedUser: User = matched || {
-      id: `usr_${Date.now()}`,
-      name: email.split("@")[0],
-      email: email,
-      role: "user",
-      photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-    };
+  const initAuth = useCallback(async () => {
+    try {
+      // 1. Check BetterAuth session
+      const sessionRes = await authClient.getSession();
+      const authUser = sessionRes?.data?.user;
 
-    setUser(loggedUser);
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(loggedUser));
-    setIsLoading(false);
-    return { success: true };
+      if (!authUser) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Check if Express backend has a valid cookie
+      let hasValidCookie = false;
+      try {
+        const meRes = await http.get("/server-api/auth/me", { skipAuthRedirect: true });
+        if (meRes?.user) {
+          hasValidCookie = true;
+        }
+      } catch {
+        // Express cookie missing or expired (401)
+        hasValidCookie = false;
+      }
+
+      // 3. If missing or expired, silently re-bridge
+      if (!hasValidCookie) {
+        await syncSessionWithBackend();
+      }
+
+      setUser({
+        id: authUser.id,
+        name: authUser.name,
+        email: authUser.email,
+        photoURL: authUser.image || undefined,
+        role: "user",
+      });
+    } catch (err) {
+      console.error("Auth init error:", err);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [syncSessionWithBackend]);
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  const login = async (
+    email: string,
+    password?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    setIsLoading(true);
+    try {
+      const res = await authClient.signIn.email({
+        email,
+        password: password || "",
+      });
+
+      if (res.error) {
+        setIsLoading(false);
+        return { success: false, error: res.error.message || "Invalid email or password" };
+      }
+
+      // Run bridge to create Express JWT cookie
+      await syncSessionWithBackend();
+
+      // Retrieve full user session
+      const sessionRes = await authClient.getSession();
+      const authUser = sessionRes?.data?.user;
+      if (authUser) {
+        setUser({
+          id: authUser.id,
+          name: authUser.name,
+          email: authUser.email,
+          photoURL: authUser.image || undefined,
+          role: "user",
+        });
+      }
+
+      setIsLoading(false);
+      return { success: true };
+    } catch (err: any) {
+      setIsLoading(false);
+      return { success: false, error: err.message || "Failed to log in" };
+    }
   };
 
-  const register = async (name: string, email: string): Promise<{ success: boolean; error?: string }> => {
+  const register = async (
+    name: string,
+    email: string,
+    password?: string,
+    photoURL?: string
+  ): Promise<{ success: boolean; error?: string }> => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    const newUser: User = {
-      id: `usr_${Date.now()}`,
-      name,
-      email,
-      role: "user",
-      photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
-    };
+    try {
+      const res = await authClient.signUp.email({
+        name,
+        email,
+        password: password || "",
+        image: photoURL || undefined,
+      });
 
-    setUser(newUser);
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newUser));
-    setIsLoading(false);
-    return { success: true };
+      if (res.error) {
+        setIsLoading(false);
+        return { success: false, error: res.error.message || "Registration failed" };
+      }
+
+      setIsLoading(false);
+      return { success: true };
+    } catch (err: any) {
+      setIsLoading(false);
+      return { success: false, error: err.message || "Registration failed" };
+    }
   };
 
   const logout = async () => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    setUser(null);
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    setIsLoading(false);
+    try {
+      await Promise.allSettled([
+        authClient.signOut(),
+        http.post("/server-api/auth/logout", {}, { skipAuthRedirect: true }),
+      ]);
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setUser(null);
+      setIsLoading(false);
+    }
   };
 
-  const switchUser = (userId: string) => {
-    const target = mockUsers.find((u) => u.id === userId);
-    if (target) {
-      setUser(target);
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(target));
-    }
+  const loginWithGoogle = async (callbackURL: string = "/dashboard") => {
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL,
+    });
+  };
+
+  const switchUser = () => {
+    toast.info("Real authentication is active. Use Login/Register to switch accounts.");
   };
 
   const toggleMockUser = () => {
-    if (!user) {
-      // Logged out -> switch to Alex Vance (Host)
-      setUser(mockUsers[0]);
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(mockUsers[0]));
-    } else if (user.email === mockUsers[0].email) {
-      // Alex Vance -> switch to Maya Lin (Creator)
-      setUser(mockUsers[1]);
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(mockUsers[1]));
-    } else {
-      // Switch to logged out
-      setUser(null);
-      localStorage.removeItem(AUTH_STORAGE_KEY);
-    }
+    toast.info("Real authentication is active. Sign in with your real account.");
+  };
+
+  const refreshSession = async () => {
+    await initAuth();
   };
 
   return (
@@ -116,8 +203,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        loginWithGoogle,
         switchUser,
         toggleMockUser,
+        refreshSession,
       }}
     >
       {children}
@@ -127,9 +216,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
-

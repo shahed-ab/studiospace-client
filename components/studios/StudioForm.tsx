@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { Studio, StudioCategory } from "@/types";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { createStudio, updateStudio } from "@/lib/api";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";

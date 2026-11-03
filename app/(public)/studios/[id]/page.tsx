@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getStudioById } from "@/lib/api";
 import { Studio } from "@/types";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";

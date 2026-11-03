@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Studio } from "@/types";
 import { createBooking, checkBookingOverlap } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {

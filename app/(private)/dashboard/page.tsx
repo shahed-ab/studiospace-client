@@ -10,7 +10,7 @@ import {
   getMyStudios,
   updateBookingStatus,
 } from "@/lib/api";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { toast } from "sonner";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";

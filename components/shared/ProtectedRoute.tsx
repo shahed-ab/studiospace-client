@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { Container } from "@/components/ui/Container";
 
 interface ProtectedRouteProps {
