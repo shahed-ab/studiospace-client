@@ -35,17 +35,17 @@ export default function MyListingsPage() {
   const [deletingStudio, setDeletingStudio] = useState<Studio | null>(null);
 
   const fetchStudios = useCallback(async () => {
-    if (!user?.email) return;
+    if (!user) return;
     setLoading(true);
     try {
-      const data = await getMyStudios(user.email);
+      const data = await getMyStudios();
       setStudios(data);
     } catch {
       toast.error("Failed to load your listings");
     } finally {
       setLoading(false);
     }
-  }, [user?.email]);
+  }, [user]);
 
   useEffect(() => {
     fetchStudios();
