@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { toast } from "sonner";
 import { Studio } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useWishlist } from "@/context/wishlist-context";
 import { cn } from "@/lib/utils";
 import {
   FiMapPin,
@@ -23,17 +23,13 @@ interface StudioCardProps {
 }
 
 export function StudioCard({ studio, className }: { studio: Studio; className?: string }) {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isSaved, toggleWishlist } = useWishlist();
+  const saved = isSaved(studio._id);
 
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    if (!isFavorite) {
-      toast.success(`Saved "${studio.title}" to favorites!`);
-    } else {
-      toast.info(`Removed "${studio.title}" from favorites.`);
-    }
+    await toggleWishlist(studio._id, studio.title);
   };
 
   return (
@@ -75,14 +71,14 @@ export function StudioCard({ studio, className }: { studio: Studio; className?: 
             {/* Favorite Heart Button */}
             <button
               onClick={handleFavoriteClick}
-              aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
+              aria-label={saved ? "Remove from wishlist" : "Add to wishlist"}
               className="flex items-center justify-center w-8 h-8 rounded-full bg-surface/90 backdrop-blur-md border border-white/10 text-foreground hover:scale-110 active:scale-95 transition-all shadow-sm"
             >
               <FiHeart
                 className={cn(
                   "w-3.5 h-3.5 transition-colors",
-                  isFavorite
-                    ? "text-[#FF5C5C] fill-[#FF5C5C]"
+                  saved
+                    ? "text-accent fill-accent"
                     : "text-muted hover:text-foreground"
                 )}
               />

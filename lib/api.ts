@@ -245,3 +245,27 @@ export interface DashboardStats {
 export async function getDashboardStats(): Promise<DashboardStats> {
   return http.get<DashboardStats>("/server-api/dashboard/stats");
 }
+
+// ==========================================
+// WISHLIST APIS
+// ==========================================
+
+export async function getWishlist(): Promise<Studio[]> {
+  try {
+    const items = await http.get<any[]>("/server-api/wishlist");
+    return items
+      .map((item) => (item.studioId && typeof item.studioId === "object" ? item.studioId : null))
+      .filter(Boolean) as Studio[];
+  } catch (error) {
+    console.error("Failed to fetch wishlist:", error);
+    return [];
+  }
+}
+
+export async function addToWishlist(studioId: string): Promise<any> {
+  return http.post(`/server-api/wishlist/${studioId}`, {});
+}
+
+export async function removeFromWishlist(studioId: string): Promise<any> {
+  return http.delete(`/server-api/wishlist/${studioId}`);
+}

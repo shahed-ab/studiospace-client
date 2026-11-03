@@ -7,6 +7,8 @@ import Link from "next/link";
 import { getStudioById } from "@/lib/api";
 import { Studio } from "@/types";
 import { useAuth } from "@/context/auth-context";
+import { useWishlist } from "@/context/wishlist-context";
+import { toast } from "sonner";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -17,7 +19,7 @@ import { cn } from "@/lib/utils";
 import {
   FiArrowLeft,
   FiShare2,
-  FiBookmark,
+  FiHeart,
   FiStar,
   FiMapPin,
   FiUsers,
@@ -27,6 +29,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiHome,
+  FiGrid,
 } from "react-icons/fi";
 import { MdOutlineSquareFoot } from "react-icons/md";
 
@@ -73,6 +76,13 @@ export default function StudioDetailsPage() {
   }
 
   const isOwner = user?.email === studio.ownerEmail;
+  const { isSaved, toggleWishlist } = useWishlist();
+  const saved = studio ? isSaved(studio._id) : false;
+
+  const handleToggleWishlist = async () => {
+    if (!studio) return;
+    await toggleWishlist(studio._id, studio.title);
+  };
 
   const prevImage = () => setActiveImage((a) => (a - 1 + studio.images.length) % studio.images.length);
   const nextImage = () => setActiveImage((a) => (a + 1) % studio.images.length);
@@ -98,11 +108,32 @@ export default function StudioDetailsPage() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="gap-2 text-xs">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2 text-xs"
+                onClick={() => {
+                  if (typeof window !== "undefined" && navigator.share) {
+                    navigator.share({ title: studio.title, url: window.location.href });
+                  } else if (typeof window !== "undefined") {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success("Link copied to clipboard!");
+                  }
+                }}
+              >
                 <FiShare2 className="w-4 h-4" /> Share
               </Button>
-              <Button variant="ghost" size="sm" className="gap-2 text-xs">
-                <FiBookmark className="w-4 h-4" /> Save
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "gap-2 text-xs transition-colors",
+                  saved ? "text-accent font-semibold" : "text-muted hover:text-foreground"
+                )}
+                onClick={handleToggleWishlist}
+              >
+                <FiHeart className={cn("w-4 h-4", saved && "text-accent fill-accent")} />
+                {saved ? "Saved" : "Save"}
               </Button>
             </div>
           </div>
@@ -147,7 +178,7 @@ export default function StudioDetailsPage() {
         {/* View all photos button */}
         <div className="absolute bottom-5 right-5 z-10">
           <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/15 text-sm text-white/90 hover:bg-black/80 transition-colors">
-            <FiBookmark className="w-4 h-4" />
+            <FiGrid className="w-4 h-4" />
             View All {studio.images.length * 4} Photos
           </button>
         </div>

@@ -21,6 +21,7 @@ import {
   FiPlusCircle,
   FiList,
   FiCalendar,
+  FiHeart,
   FiLogOut,
   FiRefreshCw,
   FiUser,
@@ -103,6 +104,13 @@ export function UserMenu() {
           <Link href="/my-bookings" className="flex items-center gap-2.5 py-2">
             <FiCalendar className="w-4 h-4 text-accent" />
             <span>My Bookings</span>
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link href="/wishlist" className="flex items-center gap-2.5 py-2">
+            <FiHeart className="w-4 h-4 text-accent" />
+            <span>Saved Studios</span>
           </Link>
         </DropdownMenuItem>
 

@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/context/auth-context";
+import { WishlistProvider } from "@/context/wishlist-context";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -59,10 +60,12 @@ export default function RootLayout({
           disableTransitionOnChange={false}
         >
           <AuthProvider>
-            <Navbar />
-            <div className="flex-1 flex flex-col">{children}</div>
-            <Footer />
-            <Toaster position="bottom-right" richColors />
+            <WishlistProvider>
+              <Navbar />
+              <div className="flex-1 flex flex-col">{children}</div>
+              <Footer />
+              <Toaster position="bottom-right" richColors />
+            </WishlistProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
