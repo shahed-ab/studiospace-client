@@ -1,6 +1,8 @@
 <div align="center">
 
 # StudioSpace
+<img width="1919" height="948" alt="image" src="https://github.com/user-attachments/assets/1b519e17-f8be-4b16-810c-89ab627b1ba2" />
+<img width="1913" height="945" alt="image" src="https://github.com/user-attachments/assets/0ae08b1d-02f7-4be3-b15b-65debcf8c8d2" />
 
 ### Find the space. Make the work.
 
@@ -47,6 +49,7 @@ A peer-to-peer marketplace where creators discover, book, and host photo studios
 ## Quick Start for Examiners
 
 Open the live site: **https://studiospace-client-iycx.vercel.app**
+<img width="1919" height="898" alt="image" src="https://github.com/user-attachments/assets/94f69c4d-0aeb-49ef-8299-4b0ee8e87ba7" />
 
 ### Test credentials
 
