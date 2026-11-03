@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Booking, BookingStatus } from "@/types";
 import { getMyBookings, cancelBooking } from "@/lib/api";
+import { generateBookingInvoice } from "@/lib/invoice";
 import { useAuth } from "@/context/auth-context";
 import { toast } from "sonner";
 import { Container } from "@/components/ui/Container";
@@ -90,6 +91,18 @@ export default function MyBookingsPage() {
       toast.error(msg);
     } finally {
       setCancellingBooking(null);
+    }
+  };
+
+  const handleDownloadInvoice = (booking: Booking) => {
+    try {
+      const filename = generateBookingInvoice(booking);
+      toast.success("Invoice Downloaded", {
+        description: `Official invoice ${filename} has been saved to your downloads.`,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to generate invoice";
+      toast.error("Download Failed", { description: msg });
     }
   };
 
@@ -303,8 +316,8 @@ export default function MyBookingsPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button asChild variant="outline" size="sm">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+                      <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                         <Link href={`/studios/${booking.studioId}`}>
                           <FiExternalLink className="mr-1.5 w-3.5 h-3.5" />
                           View Stage
@@ -316,6 +329,7 @@ export default function MyBookingsPage() {
                         <Button
                           variant="danger"
                           size="sm"
+                          className="w-full sm:w-auto"
                           onClick={() => setCancellingBooking(booking)}
                         >
                           <FiXCircle className="mr-1.5 w-3.5 h-3.5" />
@@ -327,29 +341,11 @@ export default function MyBookingsPage() {
                         <Button
                           variant="secondary"
                           size="sm"
-                          onClick={() =>
-                            toast.success("Call Sheet Voucher Dispatched", {
-                              description: `A formal call sheet & digital lockbox PIN was sent to ${booking.userEmail}.`,
-                            })
-                          }
+                          className="w-full sm:w-auto"
+                          onClick={() => handleDownloadInvoice(booking)}
                         >
                           <FiDownload className="mr-1.5 w-3.5 h-3.5" />
-                          Call Sheet PIN
-                        </Button>
-                      )}
-
-                      {booking.status === "Completed" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            toast.info("Invoice Download", {
-                              description: `Official tax receipt for booking #${booking._id} downloaded.`,
-                            })
-                          }
-                        >
-                          <FiDownload className="mr-1.5 w-3.5 h-3.5" />
-                          Receipt
+                          Download Invoice
                         </Button>
                       )}
                     </div>
