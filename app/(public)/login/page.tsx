@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
-import { mockUsers } from "@/data/users";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -65,7 +64,7 @@ function LoginContent() {
         toast.success("Welcome back!", {
           description: `Signed in as ${data.email}. Redirecting...`,
         });
-        router.push(redirectPath);
+        router.replace(redirectPath);
       } else {
         toast.error("Authentication failed", {
           description: res.error || "Please verify your credentials and try again.",
@@ -78,11 +77,17 @@ function LoginContent() {
     }
   };
 
-  const handleQuickFill = (user: (typeof mockUsers)[0]) => {
-    setValue("email", user.email, { shouldValidate: true });
+  const TEST_ACCOUNTS = [
+    { name: "Alex Vance", email: "host@studiospace.io", label: "Host" },
+    { name: "Maya Lin", email: "creator@studiospace.io", label: "Creator" },
+    { name: "Elena Rostova", email: "admin@studiospace.io", label: "Admin" },
+  ];
+
+  const handleQuickFill = (account: (typeof TEST_ACCOUNTS)[0]) => {
+    setValue("email", account.email, { shouldValidate: true });
     setValue("password", "Pass123!", { shouldValidate: true });
-    toast.info(`Loaded test credentials: ${user.name}`, {
-      description: `${user.email} (${user.role === "admin" ? "Admin" : "Host/Creator"})`,
+    toast.info(`Loaded test credentials: ${account.name}`, {
+      description: `${account.email} (${account.label})`,
     });
   };
 
@@ -127,15 +132,15 @@ function LoginContent() {
                   <span className="text-[11px] text-muted">Click to populate</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {mockUsers.map((u) => (
+                  {TEST_ACCOUNTS.map((account) => (
                     <button
-                      key={u.id}
+                      key={account.email}
                       type="button"
-                      onClick={() => handleQuickFill(u)}
+                      onClick={() => handleQuickFill(account)}
                       className="text-xs px-2.5 py-1 rounded-full bg-surface border border-border hover:border-accent hover:text-accent transition-colors font-medium flex items-center gap-1.5"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                      {u.name.split(" ")[0]} ({u.email.includes("host") ? "Host" : u.email.includes("creator") ? "Creator" : "Admin"})
+                      {account.name.split(" ")[0]} ({account.label})
                     </button>
                   ))}
                 </div>

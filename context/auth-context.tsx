@@ -104,7 +104,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password: password || "",
       });
 
-      if (res.error) {
+      // BetterAuth returns { data, error } — error is null on success
+      if (res?.error) {
         setIsLoading(false);
         return { success: false, error: res.error.message || "Invalid email or password" };
       }
@@ -125,6 +126,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
       }
 
+      // Keep isLoading=true until after setUser has propagated so ProtectedRoute
+      // never briefly sees {isLoading:false, user:null} during navigation.
+      // We set it false in a microtask so the user state settles first.
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
       setIsLoading(false);
       return { success: true };
     } catch (err: any) {
