@@ -14,9 +14,21 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.pexels.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.ibb.co',
+      },
     ],
+  },
+  async rewrites() {
+    const apiUrl = (process.env.API_URL || 'http://localhost:5000').replace(/\/$/, '');
+    return [
+      {
+        source: '/server-api/:path*',
+        destination: `${apiUrl}/api/:path*`,
+      },
+    ];
   },
 };
 
 export default nextConfig;
-
