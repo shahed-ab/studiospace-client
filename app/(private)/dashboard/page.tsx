@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { ConfirmModal } from "@/components/shared/ConfirmModal";
 import {
   FiPlus,
@@ -113,30 +114,38 @@ export default function DashboardPage() {
       <Container>
         {/* Welcome Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-elevated border border-border text-xs text-muted">
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                PRODUCTION COMMAND CENTER
+          <div className="flex items-start sm:items-center gap-4">
+            <Avatar
+              src={user?.photoURL}
+              name={user?.name}
+              size="lg"
+              className="w-14 h-14 sm:w-16 sm:h-16 text-lg sm:text-xl border-2 border-border/80 shadow-md shrink-0"
+            />
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-elevated border border-border text-xs text-muted">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  PRODUCTION COMMAND CENTER
+                </div>
+
+                {/* Demo user switch chip */}
+                <button
+                  type="button"
+                  onClick={toggleMockUser}
+                  className="text-xs px-3 py-1 rounded-full bg-surface border border-accent/40 text-accent hover:bg-accent hover:text-white transition-all font-medium flex items-center gap-1.5 shadow-sm"
+                >
+                  <FiSliders className="w-3 h-3" />
+                  Switch Demo User ({user?.name.split(" ")[0]})
+                </button>
               </div>
 
-              {/* Demo user switch chip */}
-              <button
-                type="button"
-                onClick={toggleMockUser}
-                className="text-xs px-3 py-1 rounded-full bg-surface border border-accent/40 text-accent hover:bg-accent hover:text-white transition-all font-medium flex items-center gap-1.5 shadow-sm"
-              >
-                <FiSliders className="w-3 h-3" />
-                Switch Demo User ({user?.name.split(" ")[0]})
-              </button>
+              <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
+                Welcome back, {user?.name || "Creator"}
+              </h1>
+              <p className="text-sm text-muted mt-1 leading-relaxed">
+                Performance overview across your active soundstages, crew requests, and scheduled call sheets.
+              </p>
             </div>
-
-            <h1 className="font-heading text-3xl sm:text-4xl font-bold text-foreground">
-              Welcome back, {user?.name || "Creator"}
-            </h1>
-            <p className="text-sm text-muted mt-1 leading-relaxed">
-              Performance overview across your active soundstages, crew requests, and scheduled call sheets.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">

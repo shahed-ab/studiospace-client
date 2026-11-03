@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-context";
+import { Avatar } from "@/components/ui/Avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,17 +52,12 @@ export function UserMenu() {
           className="relative flex items-center justify-center w-10 h-10 rounded-full border border-border bg-surface hover:border-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent transition-all duration-200 overflow-hidden shrink-0 group"
           aria-label="User navigation menu"
         >
-          {user.photoURL ? (
-            <Image
-              src={user.photoURL}
-              alt={user.name}
-              fill
-              className="object-cover"
-              sizes="40px"
-            />
-          ) : (
-            <FiUser className="w-5 h-5 text-muted group-hover:text-accent transition-colors" />
-          )}
+          <Avatar
+            src={user.photoURL}
+            name={user.name}
+            size="md"
+            className="w-full h-full border-0"
+          />
         </button>
       </DropdownMenuTrigger>
 

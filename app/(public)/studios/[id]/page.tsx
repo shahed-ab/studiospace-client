@@ -10,6 +10,7 @@ import { useAuth } from "@/context/auth-context";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Avatar } from "@/components/ui/Avatar";
 import { BookingModal } from "@/components/studios/BookingModal";
 import { StudioDetailsSkeleton } from "@/components/shared/Skeletons";
 import { cn } from "@/lib/utils";
@@ -298,13 +299,12 @@ export default function StudioDetailsPage() {
             <div className="p-6 rounded-[20px] bg-surface border border-border">
               <div className="flex flex-col sm:flex-row sm:items-start gap-5">
                 <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-elevated border border-border shrink-0">
-                  {studio.ownerAvatar ? (
-                    <Image src={studio.ownerAvatar} alt={studio.ownerName} fill sizes="80px" className="object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-muted">
-                      {studio.ownerName[0]}
-                    </div>
-                  )}
+                  <Avatar
+                    src={studio.ownerAvatar}
+                    name={studio.ownerName}
+                    size="xl"
+                    className="w-full h-full rounded-2xl border-0"
+                  />
                   <div className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-accent flex items-center justify-center border-2 border-surface">
                     <FiCheckCircle className="w-3 h-3 text-white" />
                   </div>
@@ -385,13 +385,12 @@ export default function StudioDetailsPage() {
                     <div key={i} className="p-5 rounded-[20px] bg-surface border border-border">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="relative w-10 h-10 rounded-full overflow-hidden bg-elevated shrink-0">
-                          {review.userAvatar ? (
-                            <Image src={review.userAvatar} alt={review.userName} fill sizes="40px" className="object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-sm font-bold text-muted">
-                              {review.userName[0]}
-                            </div>
-                          )}
+                          <Avatar
+                            src={review.userAvatar}
+                            name={review.userName}
+                            size="md"
+                            className="w-full h-full border-0"
+                          />
                         </div>
                         <div>
                           <div className="font-semibold text-sm text-foreground">{review.userName}</div>
