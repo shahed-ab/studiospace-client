@@ -37,6 +37,7 @@ export default function StudioDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { isSaved, toggleWishlist } = useWishlist();
 
   const [studio, setStudio] = useState<Studio | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,7 +77,6 @@ export default function StudioDetailsPage() {
   }
 
   const isOwner = user?.email === studio.ownerEmail;
-  const { isSaved, toggleWishlist } = useWishlist();
   const saved = studio ? isSaved(studio._id) : false;
 
   const handleToggleWishlist = async () => {
