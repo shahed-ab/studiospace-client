@@ -4,69 +4,13 @@ import {
   StudioFilterParams,
   BookingStatus,
 } from "@/types";
-import { initialStudios } from "@/data/studios";
-import { initialBookings } from "@/data/bookings";
+import { http } from "@/lib/http";
 
-// Simulated network delay between min and max ms
-function delay(min = 400, max = 800): Promise<void> {
-  const ms = Math.floor(Math.random() * (max - min + 1)) + min;
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// In-memory / localStorage cache for studios
-const STUDIOS_STORAGE_KEY = "studiospace_studios";
-const BOOKINGS_STORAGE_KEY = "studiospace_bookings";
-
-function getStoredStudios(): Studio[] {
-  if (typeof window === "undefined") {
-    return initialStudios;
-  }
-  try {
-    const raw = localStorage.getItem(STUDIOS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(STUDIOS_STORAGE_KEY, JSON.stringify(initialStudios));
-      return initialStudios;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return initialStudios;
-  }
-}
-
-function saveStudios(studios: Studio[]): void {
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(STUDIOS_STORAGE_KEY, JSON.stringify(studios));
-    } catch (e) {
-      console.error("Failed to save studios to localStorage", e);
-    }
-  }
-}
-
-function getStoredBookings(): Booking[] {
-  if (typeof window === "undefined") {
-    return initialBookings;
-  }
-  try {
-    const raw = localStorage.getItem(BOOKINGS_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(initialBookings));
-      return initialBookings;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return initialBookings;
-  }
-}
-
-function saveBookings(bookings: Booking[]): void {
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(bookings));
-    } catch (e) {
-      console.error("Failed to save bookings to localStorage", e);
-    }
-  }
+// Parse "HH:mm" into minutes since midnight
+function timeToMinutes(timeStr: string): number {
+  if (!timeStr) return 0;
+  const [h, m] = timeStr.split(":").map(Number);
+  return h * 60 + (m || 0);
 }
 
 // ==========================================
@@ -79,137 +23,132 @@ export async function getStudios(params?: StudioFilterParams): Promise<{
   totalPages: number;
   currentPage: number;
 }> {
-  await delay(400, 700);
-  let list = [...getStoredStudios()];
+  const query = new URLSearchParams();
 
-  if (params?.query) {
-    const q = params.query.toLowerCase().trim();
-    list = list.filter(
-      (s) =>
-        s.title.toLowerCase().includes(q) ||
-        s.location.toLowerCase().includes(q) ||
-        (s.city && s.city.toLowerCase().includes(q)) ||
-        s.category.toLowerCase().includes(q) ||
-        (s.tags && s.tags.some((t) => t.toLowerCase().includes(q)))
-    );
-  }
-
+  if (params?.query) query.set("search", params.query);
   if (params?.category && params.category !== "All" && params.category !== "All Disciplines") {
-    list = list.filter((s) => s.category.toLowerCase() === params.category!.toLowerCase());
+    query.set("category", params.category);
+  }
+  if (params?.minPrice !== undefined && params.minPrice > 0) {
+    query.set("minPrice", String(params.minPrice));
+  }
+  if (params?.maxPrice !== undefined && params.maxPrice < 99999) {
+    query.set("maxPrice", String(params.maxPrice));
   }
 
-  if (params?.minPrice !== undefined) {
-    list = list.filter((s) => s.hourlyRate >= params.minPrice!);
-  }
-
-  if (params?.maxPrice !== undefined) {
-    list = list.filter((s) => s.hourlyRate <= params.maxPrice!);
-  }
-
-  if (params?.sortBy) {
-    switch (params.sortBy) {
-      case "price-asc":
-        list.sort((a, b) => a.hourlyRate - b.hourlyRate);
-        break;
-      case "price-desc":
-        list.sort((a, b) => b.hourlyRate - a.hourlyRate);
-        break;
-      case "newest":
-        list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-      case "top-rated":
-      default:
-        list.sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount);
-        break;
-    }
-  }
-
-  const total = list.length;
-  const page = params?.page || 1;
-  const limit = params?.limit || 9;
-  const totalPages = Math.ceil(total / limit) || 1;
-  const offset = (page - 1) * limit;
-  const paginated = list.slice(offset, offset + limit);
-
-  return {
-    studios: paginated,
-    total,
-    totalPages,
-    currentPage: page,
+  const sortMap: Record<string, string> = {
+    "top-rated": "top",
+    "price-asc": "price-asc",
+    "price-desc": "price-desc",
+    newest: "newest",
   };
+  if (params?.sortBy) {
+    query.set("sort", sortMap[params.sortBy] || "newest");
+  }
+
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+
+  const queryString = query.toString();
+  const endpoint = `/server-api/studios${queryString ? `?${queryString}` : ""}`;
+
+  try {
+    const res = await http<{
+      studios: Studio[];
+      total: number;
+      page: number;
+      pages: number;
+    }>(endpoint);
+
+    return {
+      studios: res.studios || [],
+      total: res.total || 0,
+      totalPages: res.pages || 1,
+      currentPage: res.page || 1,
+    };
+  } catch (error) {
+    console.error("Failed to fetch studios:", error);
+    return {
+      studios: [],
+      total: 0,
+      totalPages: 1,
+      currentPage: 1,
+    };
+  }
 }
 
 export async function getFeaturedStudios(): Promise<Studio[]> {
-  await delay(400, 600);
-  const list = getStoredStudios();
-  // Return 6 top-rated studios matching the home page design
-  return list.filter((s) => s.featured).slice(0, 6);
+  try {
+    const res = await http<{ studios: Studio[] }>("/server-api/studios?sort=top&limit=6");
+    return res.studios || [];
+  } catch (error) {
+    console.error("Failed to fetch featured studios:", error);
+    return [];
+  }
+}
+
+export async function getCategoryStats(): Promise<{ category: string; count: number }[]> {
+  try {
+    return await http.get<{ category: string; count: number }[]>(
+      "/server-api/studios/stats/categories"
+    );
+  } catch (error) {
+    console.error("Failed to fetch category stats:", error);
+    return [];
+  }
 }
 
 export async function getStudioById(id: string): Promise<Studio | null> {
-  await delay(400, 700);
-  const list = getStoredStudios();
-  return list.find((s) => s._id === id) || null;
+  try {
+    return await http.get<Studio>(`/server-api/studios/${id}`);
+  } catch (error) {
+    console.error(`Failed to fetch studio ${id}:`, error);
+    return null;
+  }
 }
 
-export async function getMyStudios(userEmail: string): Promise<Studio[]> {
-  await delay(400, 700);
-  const list = getStoredStudios();
-  return list.filter((s) => s.ownerEmail.toLowerCase() === userEmail.toLowerCase());
+export async function getMyStudios(_userEmail?: string): Promise<Studio[]> {
+  try {
+    return await http.get<Studio[]>("/server-api/my-studios");
+  } catch (error) {
+    console.error("Failed to fetch host studios:", error);
+    return [];
+  }
 }
 
 export async function createStudio(
   studioData: Omit<Studio, "_id" | "createdAt" | "rating" | "reviewCount" | "reviews">
 ): Promise<Studio> {
-  await delay(600, 900);
-  const list = getStoredStudios();
-  const newStudio: Studio = {
-    ...studioData,
-    _id: `std_${Date.now()}`,
-    rating: 5.0,
-    reviewCount: 0,
-    reviews: [],
-    createdAt: new Date().toISOString(),
-  };
-
-  const updated = [newStudio, ...list];
-  saveStudios(updated);
-  return newStudio;
+  return http.post<Studio>("/server-api/studios", studioData);
 }
 
 export async function updateStudio(
   id: string,
   updates: Partial<Studio>
 ): Promise<Studio> {
-  await delay(600, 900);
-  const list = getStoredStudios();
-  const index = list.findIndex((s) => s._id === id);
-  if (index === -1) {
-    throw new Error("Studio not found");
-  }
-
-  const updatedStudio = { ...list[index], ...updates };
-  list[index] = updatedStudio;
-  saveStudios(list);
-  return updatedStudio;
+  return http.put<Studio>(`/server-api/studios/${id}`, updates);
 }
 
 export async function deleteStudio(id: string): Promise<{ success: boolean }> {
-  await delay(500, 800);
-  const list = getStoredStudios();
-  const filtered = list.filter((s) => s._id !== id);
-  saveStudios(filtered);
+  await http.delete(`/server-api/studios/${id}`);
   return { success: true };
 }
 
 // ==========================================
-// BOOKING APIS & OVERLAP VALIDATION
+// BOOKING APIS & AVAILABILITY
 // ==========================================
 
-// Parse "HH:mm" into minutes since midnight
-function timeToMinutes(timeStr: string): number {
-  const [h, m] = timeStr.split(":").map(Number);
-  return h * 60 + (m || 0);
+export async function getStudioAvailability(
+  studioId: string,
+  date: string
+): Promise<Booking[]> {
+  try {
+    return await http.get<Booking[]>(
+      `/server-api/studios/${studioId}/availability?date=${date}`
+    );
+  } catch {
+    return [];
+  }
 }
 
 export async function checkBookingOverlap(
@@ -219,112 +158,90 @@ export async function checkBookingOverlap(
   endTime: string,
   excludeBookingId?: string
 ): Promise<{ hasOverlap: boolean; conflictingBooking?: Booking }> {
-  await delay(200, 400);
-  const bookings = getStoredBookings();
-  const reqStart = timeToMinutes(startTime);
-  const reqEnd = timeToMinutes(endTime);
+  try {
+    const confirmed = await getStudioAvailability(studioId, date);
+    const reqStart = timeToMinutes(startTime);
+    const reqEnd = timeToMinutes(endTime);
 
-  const conflict = bookings.find((b) => {
-    if (b.studioId !== studioId) return false;
-    if (b.date !== date) return false;
-    if (b.status !== "Confirmed" && b.status !== "Pending") return false;
-    if (excludeBookingId && b._id === excludeBookingId) return false;
+    const conflict = confirmed.find((b) => {
+      if (excludeBookingId && b._id === excludeBookingId) return false;
+      const bStart = timeToMinutes(b.startTime);
+      const bEnd = timeToMinutes(b.endTime);
+      return reqStart < bEnd && reqEnd > bStart;
+    });
 
-    const bStart = timeToMinutes(b.startTime);
-    const bEnd = timeToMinutes(b.endTime);
-
-    // Overlap condition: start < other.end && end > other.start
-    return reqStart < bEnd && reqEnd > bStart;
-  });
-
-  return {
-    hasOverlap: Boolean(conflict),
-    conflictingBooking: conflict,
-  };
+    return {
+      hasOverlap: Boolean(conflict),
+      conflictingBooking: conflict,
+    };
+  } catch {
+    return { hasOverlap: false };
+  }
 }
 
 export async function createBooking(
   bookingData: Omit<Booking, "_id" | "createdAt" | "status">
 ): Promise<Booking> {
-  await delay(600, 900);
-
-  // Validate start time < end time
   const reqStart = timeToMinutes(bookingData.startTime);
   const reqEnd = timeToMinutes(bookingData.endTime);
   if (reqEnd <= reqStart) {
     throw new Error("End time must be after start time");
   }
 
-  // Check overlap against Confirmed bookings
-  const { hasOverlap, conflictingBooking } = await checkBookingOverlap(
-    bookingData.studioId,
-    bookingData.date,
-    bookingData.startTime,
-    bookingData.endTime
-  );
+  return http.post<Booking>("/server-api/bookings", {
+    studioId: bookingData.studioId,
+    date: bookingData.date,
+    startTime: bookingData.startTime,
+    endTime: bookingData.endTime,
+    specialRequests: bookingData.specialRequests,
+  });
+}
 
-  if (hasOverlap && conflictingBooking) {
-    throw new Error(
-      `Slot unavailable: Another reservation exists for this studio on ${conflictingBooking.date} from ${conflictingBooking.startTime} to ${conflictingBooking.endTime}.`
-    );
+export async function getMyBookings(_userEmail?: string): Promise<Booking[]> {
+  try {
+    return await http.get<Booking[]>("/server-api/bookings/my");
+  } catch (error) {
+    console.error("Failed to fetch my bookings:", error);
+    return [];
   }
-
-  const list = getStoredBookings();
-  const newBooking: Booking = {
-    ...bookingData,
-    _id: `bk_${Date.now()}`,
-    status: "Pending", // Section 7 Rule 12: saves with status Pending
-    createdAt: new Date().toISOString(),
-  };
-
-  const updated = [newBooking, ...list];
-  saveBookings(updated);
-  return newBooking;
 }
 
-export async function getMyBookings(userEmail: string): Promise<Booking[]> {
-  await delay(400, 700);
-  const list = getStoredBookings();
-  return list.filter((b) => b.userEmail.toLowerCase() === userEmail.toLowerCase());
+export async function getHostBookings(_ownerEmail?: string): Promise<Booking[]> {
+  try {
+    return await http.get<Booking[]>("/server-api/bookings/host");
+  } catch (error) {
+    console.error("Failed to fetch host bookings:", error);
+    return [];
+  }
 }
 
-export async function getHostBookings(ownerEmail: string): Promise<Booking[]> {
-  await delay(400, 700);
-  const list = getStoredBookings();
-  return list.filter((b) => b.ownerEmail.toLowerCase() === ownerEmail.toLowerCase());
+export async function cancelBooking(id: string): Promise<{ success: boolean; booking?: Booking }> {
+  const booking = await http.patch<Booking>(`/server-api/bookings/${id}/cancel`, {});
+  return { success: true, booking };
 }
 
 export async function updateBookingStatus(
   id: string,
   status: BookingStatus
 ): Promise<Booking> {
-  await delay(400, 700);
-  const list = getStoredBookings();
-  const index = list.findIndex((b) => b._id === id);
-  if (index === -1) {
-    throw new Error("Booking not found");
-  }
-
-  list[index].status = status;
-  saveBookings(list);
-  return list[index];
+  return http.patch<Booking>(`/server-api/bookings/${id}/status`, { status });
 }
 
-export async function cancelBooking(id: string): Promise<{ success: boolean }> {
-  await delay(500, 800);
-  const list = getStoredBookings();
-  const index = list.findIndex((b) => b._id === id);
-  if (index === -1) {
-    throw new Error("Booking not found");
-  }
+// ==========================================
+// DASHBOARD APIS
+// ==========================================
 
-  // Only allow cancelling if pending
-  if (list[index].status !== "Pending") {
-    throw new Error("Only pending bookings can be cancelled.");
-  }
-
-  list[index].status = "Cancelled";
-  saveBookings(list);
-  return { success: true };
+export interface DashboardStats {
+  listingsCount: number;
+  myBookingsCount: number;
+  pendingRequestsCount: number;
+  earnings: number;
+  totalEarnings?: number;
+  listings?: number;
+  bookings?: number;
+  pendingRequests?: number;
 }
 
+export async function getDashboardStats(): Promise<DashboardStats> {
+  return http.get<DashboardStats>("/server-api/dashboard/stats");
+}
