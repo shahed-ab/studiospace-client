@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -36,11 +36,21 @@ type LoginFormData = z.infer<typeof loginSchema>;
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get("redirect") || searchParams.get("callbackUrl") || "/dashboard";
+  const rawRedirect = searchParams.get("redirect") || searchParams.get("callbackUrl") || "/dashboard";
+  const redirectPath =
+    rawRedirect && !rawRedirect.startsWith("/login") && !rawRedirect.startsWith("/register")
+      ? rawRedirect
+      : "/dashboard";
 
-  const { login, loginWithGoogle } = useAuth();
+  const { user, isLoading, login, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.replace(redirectPath);
+    }
+  }, [user, isLoading, redirectPath, router]);
 
   const {
     register,
@@ -51,7 +61,7 @@ function LoginContent() {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "host@studiospace.io",
-      password: "password123",
+      password: "Pass123!",
       rememberMe: true,
     },
   });

@@ -4,7 +4,16 @@ import { MongoClient } from "mongodb";
 import { createAuthMiddleware, APIError } from "better-auth/api";
 
 const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/studiospace";
-const client = new MongoClient(uri);
+
+declare global {
+  // eslint-disable-next-line no-var
+  var _mongoClient: MongoClient | undefined;
+}
+
+const client = globalThis._mongoClient || new MongoClient(uri);
+if (process.env.NODE_ENV !== "production") {
+  globalThis._mongoClient = client;
+}
 const db = client.db();
 
 export const auth = betterAuth({

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { cn } from "@/lib/utils";
-import { FiMenu, FiX, FiPlus, FiArrowRight } from "react-icons/fi";
+import { FiMenu, FiX, FiPlus, FiArrowRight, FiLogOut } from "react-icons/fi";
 
 const NAV_LINKS = [
   { name: "Home", href: "/" },
@@ -20,7 +20,7 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -176,6 +176,18 @@ export function Navbar() {
                     <FiPlus className="mr-2 w-4 h-4" />
                     Host a Space
                   </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-danger hover:text-danger hover:bg-danger/10 justify-center mt-1"
+                  onClick={async () => {
+                    await logout();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <FiLogOut className="mr-2 w-4 h-4" />
+                  Sign Out
                 </Button>
               </>
             ) : (

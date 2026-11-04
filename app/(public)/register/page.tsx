@@ -57,10 +57,16 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 function RegisterContent() {
   const router = useRouter();
-  const { register: authRegister, loginWithGoogle } = useAuth();
+  const { user, isLoading, register: authRegister, loginWithGoogle } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    if (!isLoading && user) {
+      router.replace("/dashboard");
+    }
+  }, [user, isLoading, router]);
 
   const {
     register,

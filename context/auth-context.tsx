@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Synchronize BetterAuth session with Express API via /api/bridge
   const syncSessionWithBackend = useCallback(async (): Promise<boolean> => {
     try {
-      const bridgeRes = await fetch("/api/bridge");
+      const bridgeRes = await fetch("/api/bridge", { credentials: "include" });
       if (!bridgeRes.ok) return false;
       const { bridgeToken } = await bridgeRes.json();
       if (!bridgeToken) return false;
@@ -110,8 +110,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: res.error.message || "Invalid email or password" };
       }
 
-      // Run bridge to create Express JWT cookie
-      await syncSessionWithBackend();
+      // Run bridge to create Express JWT cookie with 1 retry on cold-starts
+      let synced = await syncSessionWithBackend();
+      if (!synced) {
+        await new Promise((r) => setTimeout(r, 400));
+        synced = await syncSessionWithBackend();
+      }
+
+      if (!synced) {
+        await authClient.signOut();
+        setIsLoading(false);
+        return {
+          success: false,
+          error: "Unable to establish secure backend session. Please ensure the server is reachable and try again.",
+        };
+      }
 
       // Retrieve full user session
       const sessionRes = await authClient.getSession();
@@ -156,6 +169,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.error) {
         setIsLoading(false);
         return { success: false, error: res.error.message || "Registration failed" };
+      }
+
+      // BetterAuth automatically creates a session on signup by default.
+      // Clear it so the user lands on /login in an unauthenticated state as required.
+      try {
+        await authClient.signOut();
+      } catch {
+        // ignore sign-out error
       }
 
       setIsLoading(false);
